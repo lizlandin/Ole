@@ -5,12 +5,15 @@ public class Estrella : MonoBehaviour
 
     public float velocidadRotacion = 100f;
     private ContadorEstrellas contadorEstrellas;
+    private GestorPartida gestorPartida;
 
     void Start()
     {
         // Aquí se busca en la escena el objeto que tiene el script
         // que lleva el contador de estrellas.
         contadorEstrellas = FindFirstObjectByType<ContadorEstrellas>();
+
+        gestorPartida = FindFirstObjectByType<GestorPartida>();
     }
 
     void Update()
@@ -33,6 +36,11 @@ public class Estrella : MonoBehaviour
             if (contadorEstrellas != null)
             {
                 contadorEstrellas.SumarEstrella();
+            }
+
+            if (gestorPartida != null)
+            {
+                gestorPartida.RecolectarEstrella();
             }
 
             // Desactiva la estrella para que desaparezca de la escena.

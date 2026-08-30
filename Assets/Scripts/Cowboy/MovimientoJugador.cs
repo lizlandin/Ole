@@ -71,71 +71,84 @@ public class MovimientoJugador : MonoBehaviour
         }
     }
 
-// Uso de AI: cmabio sugerido en el movimiento por AI debido a que mi personaje estaba atrevasando los Mesh Collider.
+    // Uso de AI: cmabio sugerido en el movimiento por AI debido a que mi personaje estaba atrevasando los Mesh Collider.
 
-// MOVIMIENTO DEL JUGADOR:
-// Se utiliza linearVelocity para controlar la velocidad del Rigidbody en los
-// ejes X y Z. En lugar de indicar directamente la siguiente posición del jugador,
-// se establece la velocidad con la que debe desplazarse y Unity se encarga de
-// actualizar su posición y el como actuar con las colisiones mediante el sistema de físicas.
-//
-// Aquí se conserva la velocidad del eje Y para no interferir con la gravedad y para
-// que después se puedan hacer movimientos verticales, como saltar.
+    // MOVIMIENTO DEL JUGADOR:
+    // Se utiliza linearVelocity para controlar la velocidad del Rigidbody en los
+    // ejes X y Z. En lugar de indicar directamente la siguiente posición del jugador,
+    // se establece la velocidad con la que debe desplazarse y Unity se encarga de
+    // actualizar su posición y el como actuar con las colisiones mediante el sistema de físicas.
+    //
+    // Aquí se conserva la velocidad del eje Y para no interferir con la gravedad y para
+    // que después se puedan hacer movimientos verticales, como saltar.
 
-// Antes, con MovePosition, es como si le dijeramos al personaje "muévete a esta posición" con una
-// fórmula, y ahora es "muévete a esta velocidad y deja que la física de Unity determine el "desplazamiento"
-// lo cual ya hizo que el Cowboy pudiera chocar con los límites de la Plaza/
-void FixedUpdate()
-{
-    rb.linearVelocity = new Vector3( movimiento.x * velocidad, rb.linearVelocity.y, movimiento.z * velocidad);
-}
-
-// SUELO
-
-// Uso de AI: Se me propusieron diferentes alternativas para detectar si el jugador estaba
-// en el suelo, una de ellas era utilizar un Raycast, sin embargo, decidí
-// utilizar Tags porque fue la opción que más entendí ya que ya habiamos visto como se usan los Tags en clase.
-
-// Si el personaje esta tocando un objeto que tenga el tag de "suelo" puede saltar.
-
-
-// Revisa si el objeto que está tocando tiene el Tag "Superficie".
-// Si si lo tiene, significa que el jugador está sobre una superficie en la que puede apoyarse y volver a saltar.
-void OnCollisionStay(Collision collision)
+    // Antes, con MovePosition, es como si le dijeramos al personaje "muévete a esta posición" con una
+    // fórmula, y ahora es "muévete a esta velocidad y deja que la física de Unity determine el "desplazamiento"
+    // lo cual ya hizo que el Cowboy pudiera chocar con los límites de la Plaza/
+    void FixedUpdate()
     {
-        if (collision.gameObject.CompareTag("Superficie"))
-        {
-            enSuelo = true;
-
-            // Si el jugador tiene un Animator, le avisamos que está en el suelo para que pueda 
-            // cambiar a la animación que toca.
-
-            if (animator != null)
-            {
-                animator.SetBool("enSuelo", true);
-                
-            }
-        }
+        rb.linearVelocity = new Vector3( movimiento.x * velocidad, rb.linearVelocity.y, movimiento.z * velocidad);
     }
 
-// Esta función es para cuando el jugador deja de tocar otro objeto.
-void OnCollisionExit(Collision collision)
-    {
+    // SUELO
 
-        // Si el objeto que dejó de tocar era una "Superficie", quiere decir que el jugador 
-        // ya no está en  ella, por ejemplo, si acaba de saltar.
-        if (collision.gameObject.CompareTag("Superficie"))
+    // Uso de AI: Se me propusieron diferentes alternativas para detectar si el jugador estaba
+    // en el suelo, una de ellas era utilizar un Raycast, sin embargo, decidí
+    // utilizar Tags porque fue la opción que más entendí ya que ya habiamos visto como se usan los Tags en clase.
+
+    // Si el personaje esta tocando un objeto que tenga el tag de "suelo" puede saltar.
+
+
+    // Revisa si el objeto que está tocando tiene el Tag "Superficie".
+    // Si si lo tiene, significa que el jugador está sobre una superficie en la que puede apoyarse y volver a saltar.
+    void OnCollisionStay(Collision collision)
         {
-            enSuelo = false;
-
-             // Aquí se le dice al Animator que el jugador ya no está en el suelo para que cambie 
-             // las animaciones del salto.
-
-            if(animator != null)
+            if (collision.gameObject.CompareTag("Superficie"))
             {
-                animator.SetBool("enSuelo", false);
+                enSuelo = true;
+
+                // Si el jugador tiene un Animator, le avisamos que está en el suelo para que pueda 
+                // cambiar a la animación que toca.
+
+                if (animator != null)
+                {
+                    animator.SetBool("enSuelo", true);
+                    
+                }
             }
         }
+
+    // Esta función es para cuando el jugador deja de tocar otro objeto.
+    void OnCollisionExit(Collision collision)
+        {
+
+            // Si el objeto que dejó de tocar era una "Superficie", quiere decir que el jugador 
+            // ya no está en  ella, por ejemplo, si acaba de saltar.
+            if (collision.gameObject.CompareTag("Superficie"))
+            {
+                enSuelo = false;
+
+                // Aquí se le dice al Animator que el jugador ya no está en el suelo para que cambie 
+                // las animaciones del salto.
+
+                if(animator != null)
+                {
+                    animator.SetBool("enSuelo", false);
+                }
+            }
+        }
+
+    public void Celebrar()
+    {
+        rb.linearVelocity = Vector3.zero;
+
+        if (animator != null)
+        {
+            animator.SetTrigger("bailar");
+        }
+
+        enabled = false;
     }
+
 
 }

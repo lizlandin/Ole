@@ -1,10 +1,13 @@
 using UnityEngine;
 using System.Collections;
+using TMPro;
 
 public class VidaJugador : MonoBehaviour
 {
     public int vidas = 3;
     public float tiempoInvulnerable = 2f;
+    public TextMeshProUGUI vidasText;
+    public FeedbackUI feedbackUI;
 
     private bool vulnerable = true;
     private Animator animator;
@@ -13,6 +16,9 @@ public class VidaJugador : MonoBehaviour
     {
         // Busca el Animator del Cowboy.
         animator = GetComponentInChildren<Animator>();
+
+        vidasText.text = "Vidas: " + vidas;
+
     }
 
     // Esta función se llama cuando el toro golpea al jugador.
@@ -22,8 +28,18 @@ public class VidaJugador : MonoBehaviour
         if (vulnerable)
         {
             vidas--;
+            vidasText.text = "Vidas: " + vidas;
 
             Debug.Log("Vidas restantes: " + vidas);
+
+            if (vidas == 1)
+            {
+                feedbackUI.MostrarMensaje("¡Todo o nada! No dejes que el toro te alcance.");
+            }
+            else if (vidas > 1)
+            {
+                feedbackUI.MostrarMensaje("¡Fuerte golpe! Te quedan " + vidas + " vidas.");
+            }
 
             // Si todavía tiene vidas, reproduce la animación de golpe.
             if (vidas > 0)
@@ -100,6 +116,14 @@ public class VidaJugador : MonoBehaviour
             colliderJugador.direction = 2;
             colliderJugador.height = 1f;
             colliderJugador.radius = 0.5f;
+        }
+
+
+        // Le va a avisar al GestorPartida que el jugador perdió.
+        GestorPartida gestorPartida = FindFirstObjectByType<GestorPartida>();
+        if (gestorPartida != null )
+        {
+            gestorPartida.Perder();
         }
     }
 }

@@ -101,4 +101,23 @@ public class MovimientoToro : MonoBehaviour
         enabled = false;
     }
 
+    public void Derrotado()
+    {
+        rb.linearVelocity = Vector3.zero;
+        rb.angularVelocity = Vector3.zero;
+
+        if (animator != null)
+        {
+            animator.SetTrigger("triste");
+        }
+
+        enabled = false;
+    }
+
+    // Aumenta la velocidad del toro durante los últimos 20 segundos.
+    public void Enfurecer()
+    {
+        velocidad = velocidad + 1f;
+    }
+
 }
