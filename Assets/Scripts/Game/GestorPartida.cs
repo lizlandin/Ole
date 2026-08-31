@@ -62,6 +62,7 @@ public class GestorPartida : MonoBehaviour
         {
             jugador.enabled = false;
             toro.enabled = false;
+            toro.GetComponent<Animator>().enabled = false;
             timeManager.enabled = false;
         }
     }
@@ -153,6 +154,7 @@ public class GestorPartida : MonoBehaviour
         // y el cronómetro empieza a contar.
         jugador.enabled = true;
         toro.enabled = true;
+        toro.GetComponent<Animator>().enabled = true;
         timeManager.enabled = true;
     }
 
