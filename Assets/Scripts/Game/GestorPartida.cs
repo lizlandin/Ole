@@ -1,27 +1,99 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using TMPro;
+using UnityEngine.UI;
+using System.Collections; // Va a servir para la cuenta regresiva
 
 public class GestorPartida : MonoBehaviour
 {
-    public int metaEstrellas = 3;
-    public TextMeshProUGUI estrellasText;
-    public TextMeshProUGUI resultadoText;
+    public int metaEstrellas = 5;
     public FeedbackUI feedbackUI;
+    public TextMeshProUGUI resultadoText;
+
+    // Imágenes para la UI
+    public Image[] estrellasVisuales;
+    public Sprite estrellaVacia;
+    public Sprite estrellaLlena;
+    public GameObject panelVictoria;
+    public GameObject panelDerrota;
+
+
+    // Elementos del menú inicial
+    public GameObject panelInicio;
+    public TextMeshProUGUI cuentaRegresiva;
+
+    // Elementos del HUD
+    public GameObject fondoTiempo;
+    public GameObject barraVidas;
+    public GameObject visualEstrellas;
+
+    // Scripts que estarán en pausa antes de comenzar
+    public MovimientoJugador jugador;
+    public MovimientoToro toro;
+    public TimeManager timeManager;
+
 
     private int estrellasRecolectadas = 0;
     private bool terminada = false;
 
-    void Start()
-    {
-        estrellasText.text = "Estrellas: " + estrellasRecolectadas + " / " + metaEstrellas;
-    }
+    // Guarda si la escena se está reiniciando después de terminar una partida.
+    public static bool reinicioDirecto = false;
+
 
     // Revisa si ya se recolectaron todas las estrellas.
     public bool MisionCumplida
     {
         get { return estrellasRecolectadas >= metaEstrellas; }
     }
+
+
+    // Uso de IA:
+    // Se utilizó IA como apoyo para hacer que el menú de inicio aparezca solamente
+    // cuando se abre el juego por primera vez y para que después
+    // de perder o reiniciar, la partida pueda comenzar directamente sin volver
+    // a mostrar el menú inicial.
+
+    void Awake()
+    {
+        // Esta condición revisa si estamos entrando al juego por primera vez.
+        // Si sí, detenemos al jugador, al toro y al tiempo para que
+        // no empiecen a moverse mientras estamos en el menú.
+        if (!reinicioDirecto)
+        {
+            jugador.enabled = false;
+            toro.enabled = false;
+            timeManager.enabled = false;
+        }
+    }
+
+    void Start()
+    {
+        // Si reinicioDirecto es true significa que ya jugamos una partida
+        // y estamos reiniciando, por lo que ya no quiero mostrar el menú.
+        if (reinicioDirecto)
+        {
+            // Lo regresamos a false para dejarlo listo para el siguiente reinicio.
+            reinicioDirecto = false;
+
+            // Quitamos el menú y nos aseguramos de que tampoco aparezca
+            // la cuenta regresiva.
+            panelInicio.SetActive(false);
+            cuentaRegresiva.gameObject.SetActive(false);
+
+            // Volvemos a mostrar toda la interfaz necesaria para jugar.
+            fondoTiempo.SetActive(true);
+            barraVidas.SetActive(true);
+            visualEstrellas.SetActive(true);
+
+            // Aquí activamos al jugador, al toro y el tiempo
+            // para que la nueva partida empiece directamente.
+            jugador.enabled = true;
+            toro.enabled = true;
+            timeManager.enabled = true;
+        }
+    }
+
+
 
     // Se suscribe al evento del TimeManager.
     public void OnEnable()
@@ -35,15 +107,65 @@ public class GestorPartida : MonoBehaviour
         TimeManager.OnSecondChanged -= TimeCheck;
     }
 
+    public void IniciarPartida()
+    {
+        panelInicio.SetActive(false);
+
+        StartCoroutine(ConteoInicial());
+    }
+
+    // Uso de AI: quería que el juego se sintiera más real y estético,
+    // por lo cual agregué una cuenta regresiva antes de que inicie el juego
+    // con apoyo de la inteligencia artificial.
+    
+    // Corrutina que muestra la cuenta regresiva antes de iniciar la partida.
+    IEnumerator ConteoInicial()
+    {
+        // Activa el texto de la cuenta regresiva que inicia oculto.
+        cuentaRegresiva.gameObject.SetActive(true);
+
+        // Muestra el número 3 y espera 1 segundo.
+        cuentaRegresiva.text = "3";
+        yield return new WaitForSeconds(1f);
+
+        // Cambia el texto a 2 y vuelve a esperar 1 segundo.
+        cuentaRegresiva.text = "2";
+        yield return new WaitForSeconds(1f);
+
+        // Cambia el texto a 1 y espera otro segundo.
+        cuentaRegresiva.text = "1";
+        yield return new WaitForSeconds(1f);
+
+        // Al terminar la cuenta muestra ¡OLÉ! durante 1 segundo.
+        cuentaRegresiva.text = "¡OLÉ!";
+        yield return new WaitForSeconds(1f);
+
+        // Oculta la cuenta regresiva porque ya va a comenzar la partida.
+        cuentaRegresiva.gameObject.SetActive(false);
+
+        // Activa los elementos de la interfaz que se usan durante el juego.
+        fondoTiempo.SetActive(true);
+        barraVidas.SetActive(true);
+        visualEstrellas.SetActive(true);
+
+        // Activa nuevamente los scripts para que ahora sí comience el juego:
+        // el jugador puede moverse, el toro comienza a perseguirlo
+        // y el cronómetro empieza a contar.
+        jugador.enabled = true;
+        toro.enabled = true;
+        timeManager.enabled = true;
+    }
+
+
     // Se llama cada vez que el jugador recoge una estrella.
     public void RecolectarEstrella()
     {
         if (terminada) return;
 
         estrellasRecolectadas++;
+        ActualizarEstrellasVisuales();
 
-        // Este es para el texto de la UI
-        estrellasText.text = "Estrellas: " + estrellasRecolectadas + " / " + metaEstrellas;
+    
 
         if (MisionCumplida)
         {
@@ -109,8 +231,8 @@ public class GestorPartida : MonoBehaviour
         Debug.Log("¡Ganaste!");
 
         // Muestra en la UI cuando se gana
-        resultadoText.gameObject.SetActive(true);
-        resultadoText.text = "¡GANASTE!";
+        panelVictoria.SetActive(true);
+        resultadoText.text = "¡VICTORIA!";
 
         MovimientoJugador jugador = FindFirstObjectByType<MovimientoJugador>();
 
@@ -137,16 +259,48 @@ public class GestorPartida : MonoBehaviour
         // lo muestra en consola
         Debug.Log("¡Perdiste!");
 
-        // lo muestra en UI
-        resultadoText.gameObject.SetActive(true);
-        resultadoText.text = "¡PERDISTE!";
+        // Oculta la interfaz de la partida para dejar solo la pantalla de derrota.
+        fondoTiempo.SetActive(false);
+        barraVidas.SetActive(false);
+        visualEstrellas.SetActive(false);
 
-        // Espera 1.5 segundos antes de reiniciar el nivel.
+        // Muestra el panel de derrota.
+        panelDerrota.SetActive(true);
+
+        // Espera 5 segundos antes de reiniciar el nivel.
         Invoke("Reiniciar", 5f);
     }
 
-    void Reiniciar()
+    public void Reiniciar()
     {
+        // Indica que al cargar de nuevo la escena no queremos el menú inicial.
+        reinicioDirecto = true;
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
+
+    public void SalirJuego()
+    {
+        Debug.Log("Saliendo del juego...");
+        Application.Quit();
+    }
+
+
+
+    // Uso de AI: me ayudó a crear una función para cambiar en la UI cuando 
+    // el jugador recolectaba una estrella.
+    void ActualizarEstrellasVisuales()
+    {
+        for (int i = 0; i < estrellasVisuales.Length; i++)
+        {
+            if (i < estrellasRecolectadas)
+            {
+                estrellasVisuales[i].sprite = estrellaLlena;
+            }
+            else
+            {
+                estrellasVisuales[i].sprite = estrellaVacia;
+            }
+        }
+    }
+
 }

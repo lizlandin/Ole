@@ -1,13 +1,19 @@
 using UnityEngine;
 using System.Collections;
-using TMPro;
+using UnityEngine.UI;
 
 public class VidaJugador : MonoBehaviour
 {
     public int vidas = 3;
     public float tiempoInvulnerable = 2f;
-    public TextMeshProUGUI vidasText;
     public FeedbackUI feedbackUI;
+
+    // Imagenes para las vidas en la UI
+    public Image barraVidas;
+    public Sprite barra3Vidas;
+    public Sprite barra2Vidas;
+    public Sprite barra1Vida;
+    public Sprite barra0Vidas;
 
     private bool vulnerable = true;
     private Animator animator;
@@ -17,7 +23,7 @@ public class VidaJugador : MonoBehaviour
         // Busca el Animator del Cowboy.
         animator = GetComponentInChildren<Animator>();
 
-        vidasText.text = "Vidas: " + vidas;
+        ActualizarBarraVidas();
 
     }
 
@@ -28,7 +34,7 @@ public class VidaJugador : MonoBehaviour
         if (vulnerable)
         {
             vidas--;
-            vidasText.text = "Vidas: " + vidas;
+            ActualizarBarraVidas();
 
             Debug.Log("Vidas restantes: " + vidas);
 
@@ -124,6 +130,29 @@ public class VidaJugador : MonoBehaviour
         if (gestorPartida != null )
         {
             gestorPartida.Perder();
+        }
+    }
+
+    // Uso de AI: me ayudó con la función para poder actualizar la barra de vid en la UI
+    // ya que yo no sabía como se hacía.
+
+    void ActualizarBarraVidas()
+    {
+        if (vidas == 3)
+        {
+            barraVidas.sprite = barra3Vidas;
+        }
+        else if (vidas == 2)
+        {
+            barraVidas.sprite = barra2Vidas;
+        }
+        else if (vidas == 1)
+        {
+            barraVidas.sprite = barra1Vida;
+        }
+        else
+        {
+            barraVidas.sprite = barra0Vidas;
         }
     }
 }

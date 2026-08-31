@@ -117,7 +117,7 @@ public class MovimientoToro : MonoBehaviour
     // Aumenta la velocidad del toro durante los últimos 20 segundos.
     public void Enfurecer()
     {
-        velocidad = velocidad + 1f;
+        velocidad = velocidad + 0.5f;
     }
 
 }
